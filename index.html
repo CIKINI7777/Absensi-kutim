@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Absensi PT. KUTIM</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <style>
+        :root {
+            --primary: #0052cc;
+            --gold: #FFD700;
+            --danger: #e11d48;
+            --bg-dark: #0f172a;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; 
+            background: radial-gradient(circle at top right, #1e293b, var(--bg-dark)); 
+            color: #f8fafc; min-height: 100vh; padding: 16px; 
+        }
+        .container { max-width: 480px; margin: 0 auto; }
+        
+        .header { text-align: center; margin-bottom: 24px; padding: 20px; background: var(--glass); backdrop-filter: blur(12px); border-radius: 20px; border: 1px solid var(--glass-border); }
+        .logo { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--gold); margin-bottom: 12px; box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+        .clock { font-size: 32px; font-weight: 800; color: var(--gold); letter-spacing: 2px; margin: 8px 0; font-variant-numeric: tabular-nums; }
+        .greeting { font-size: 16px; color: #94a3b8; font-weight: 500; }
+        .greeting span { color: #fff; font-weight: 700; }
+
+        .card { background: var(--glass); backdrop-filter: blur(12px); border-radius: 20px; border: 1px solid var(--glass-border); padding: 20px; margin-bottom: 16px; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 8px; color: var(--gold); font-weight: 600; font-size: 14px; letter-spacing: 0.5px; }
+        input[type="text"], textarea { 
+            width: 100%; padding: 14px; border: 1px solid var(--glass-border); border-radius: 12px; 
+            background: rgba(0,0,0,0.3); color: #fff; font-size: 16px; transition: all 0.3s; 
+        }
+        input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1); }
+
+        .radio-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .radio-option input { display: none; }
+        .radio-option label { 
+            padding: 12px; text-align: center; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); 
+            border-radius: 12px; cursor: pointer; transition: all 0.3s; color: #cbd5e1; font-size: 14px; margin: 0;
+        }
+        .radio-option input:checked + label { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 4px 15px rgba(0, 82, 204, 0.4); }
+        
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-type { 
+            padding: 14px; border: 1px solid var(--glass-border); border-radius: 12px; background: rgba(0,0,0,0.3); 
+            color: #cbd5e1; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s; 
+        }
+        .btn-type.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+        .camera-wrapper { position: relative; width: 200px; height: 200px; margin: 0 auto 15px; border-radius: 50%; overflow: hidden; border: 3px solid var(--gold); box-shadow: 0 0 25px rgba(255, 215, 0, 0.4); }
+        #video, #canvas, #videoForm, #canvasForm { width: 100%; height: 100%; object-fit: cover; display: none; }
+        #video.active, #canvas.active, #videoForm.active, #canvasForm.active { display: block; }
+        .camera-controls { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .btn-camera { background: var(--primary); color: #fff; padding: 10px 20px; border: none; border-radius: 30px; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
+        .btn-camera:active { transform: scale(0.95); }
+
+        .btn-submit { 
+            width: 100%; padding: 16px; background: linear-gradient(135deg, var(--danger) 0%, #f97316 100%); 
+            color: #fff; border: none; border-radius: 14px; font-size: 18px; font-weight: 800; cursor: pointer; 
+            transition: transform 0.2s; box-shadow: 0 4px 20px rgba(225, 29, 72, 0.4); letter-spacing: 1px;
+        }
+        .btn-submit:active { transform: scale(0.98); }
+        .btn-submit:disabled { background: #475569; box-shadow: none; cursor: not-allowed; }
+        
+        .btn-history { width: 100%; padding: 14px; background: transparent; color: var(--gold); border: 1px solid var(--gold); border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 12px; transition: all 0.3s; }
+        .btn-history:active { background: rgba(255, 215, 0, 0.1); }
+
+        .status-message { padding: 16px; margin-top: 16px; border-radius: 12px; display: none; text-align: center; }
+        .status-message.success { background: rgba(34, 197, 94, 0.15); border: 1px solid #22c55e; color: #4ade80; display: block; }
+        .status-message.error { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #f87171; display: block; }
+        .hidden { display: none !important; }
+        .history-item { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid var(--gold); text-align: left; font-size: 14px; }
+        .history-item b { color: var(--gold); }
+        .wa-btn { background: #25D366; color: #fff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="logo.svg" alt="Logo" class="logo">
+            <div class="clock" id="liveClock">00:00:00</div>
+            <div class="greeting" id="greetingText">Selamat Datang di <span>PT. KUTIM</span></div>
+        </div>
+        
+        <form id="absenForm">
+            <div class="card">
+                <div class="form-group">
+                    <label>NRP Karyawan</label>
+                    <input type="text" id="nrp" required placeholder="Masukkan NRP Anda">
+                </div>
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="nama" required placeholder="Masukkan nama lengkap">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="form-group">
+                    <label>Pilih Shift</label>
+                    <div class="radio-group">
+                        <div class="radio-option"><input type="radio" id="shift1" name="shift" value="Shift 1" required><label for="shift1">Shift 1<br><small style="opacity:0.7">05:00 - 20:00</small></label></div>
+                        <div class="radio-option"><input type="radio" id="shift2" name="shift" value="Shift 2"><label for="shift2">Shift 2<br><small style="opacity:0.7">17:00 - 08:00</small></label></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Jenis Absen</label>
+                    <div class="btn-group">
+                        <button type="button" class="btn-type" id="btnMasuk" onclick="selectType('Masuk')">🟢 MASUK</button>
+                        <button type="button" class="btn-type" id="btnKeluar" onclick="selectType('Keluar')"> KELUAR</button>
+                    </div>
+                    <input type="hidden" id="jenisAbsen">
+                </div>
+                <div class="form-group">
+                    <label>Status Kehadiran</label>
+                    <div class="radio-group" style="grid-template-columns: 1fr 1fr 1fr;">
+                        <div class="radio-option"><input type="radio" id="hadir" name="status" value="Hadir" required onchange="handleStatus()"><label for="hadir">Hadir</label></div>
+                        <div class="radio-option"><input type="radio" id="izin" name="status" value="Izin" onchange="handleStatus()"><label for="izin">Izin</label></div>
+                        <div class="radio-option"><input type="radio" id="sakit" name="status" value="Sakit" onchange="handleStatus()"><label for="sakit">Sakit</label></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="selfieSection" class="card hidden">
+                <div class="camera-wrapper">
+                    <video id="video" autoplay playsinline></video>
+                    <canvas id="canvas"></canvas>
+                </div>
+                <div class="camera-controls">
+                    <button type="button" class="btn-camera" id="btnStart" onclick="startCamera()">📷 Buka Kamera</button>
+                    <button type="button" class="btn-camera hidden" id="btnCapture" onclick="capture()"> Ambil Foto</button>
+                    <button type="button" class="btn-camera hidden" id="btnRetake" onclick="retake()">🔄 Ulangi</button>
+                </div>
+                <input type="hidden" id="fotoSelfie">
+            </div>
+            
+            <div id="formSection" class="card hidden">
+                <div class="camera-wrapper">
+                    <video id="videoForm" autoplay playsinline></video>
+                    <canvas id="canvasForm"></canvas>
+                </div>
+                <div class="camera-controls">
+                    <button type="button" class="btn-camera" id="btnStartForm" onclick="startCameraForm()">📷 Foto Dokumen</button>
+                    <button type="button" class="btn-camera hidden" id="btnCaptureForm" onclick="captureForm()">📸 Ambil Foto</button>
+                    <button type="button" class="btn-camera hidden" id="btnRetakeForm" onclick="retakeForm()">🔄 Ulangi</button>
+                </div>
+                <input type="hidden" id="fotoForm">
+                <div class="form-group" style="margin-top:15px;">
+                    <label>Keterangan</label>
+                    <textarea id="keterangan" rows="2" placeholder="Alasan izin/sakit..."></textarea>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-submit" id="btnSubmit">🚀 KIRIM ABSEN</button>
+            <button type="button" class="btn-history" onclick="showHistory()">📋 Lihat Riwayat Saya</button>
+        </form>
+        
+        <div id="statusMsg" class="status-message"></div>
+        <div id="historyContainer" class="hidden" style="margin-top:16px;"></div>
+    </div>
+
+    <script>
+        // ⚠️ WAJIB: GANTI URL DI BAWAH INI DENGAN URL APPS SCRIPT ANDA
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-LtJ0vAYo5nD7H-Rx_ZXi4wZ4J5K0qZw30GrUotJNW9ua9hmoEZkXXxSBzrMKvDUhiw/exec';
+        
+        let stream, streamForm, fotoSelfieData, fotoFormData;
+
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour12: false });
+            document.getElementById('liveClock').textContent = timeStr;
+            
+            const hour = now.getHours();
+            let greet = "Selamat Malam";
+            if (hour >= 4 && hour < 11) greet = "Selamat Pagi";
+            else if (hour >= 11 && hour < 15) greet = "Selamat Siang";
+            else if (hour >= 15 && hour < 18) greet = "Selamat Sore";
+            
+            const nama = document.getElementById('nama').value || "Karyawan";
+            document.getElementById('greetingText').innerHTML = `${greet}, <span>${nama}</span>!`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+        document.getElementById('nama').addEventListener('input', updateClock);
+
+        function selectType(type) {
+            document.getElementById('jenisAbsen').value = type;
+            document.getElementById('btnMasuk').classList.remove('active');
+            document.getElementById('btnKeluar').classList.remove('active');
+            if(type === 'Masuk') document.getElementById('btnMasuk').classList.add('active');
+            else document.getElementById('btnKeluar').classList.add('active');
+        }
+
+        function handleStatus() {
+            const status = document.querySelector('input[name="status"]:checked').value;
+            if(status === 'Hadir') {
+                document.getElementById('selfieSection').classList.remove('hidden');
+                document.getElementById('formSection').classList.add('hidden');
+            } else {
+                document.getElementById('selfieSection').classList.add('hidden');
+                document.getElementById('formSection').classList.remove('hidden');
+            }
+        }
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 } } });
+                document.getElementById('video').srcObject = stream;
+                document.getElementById('video').classList.add('active');
+                document.getElementById('btnStart').classList.add('hidden');
+                document.getElementById('btnCapture').classList.remove('hidden');
+            } catch(err) { alert('Gagal buka kamera: ' + err.message); }
+        }
+
+        function capture() {
+            const video = document.getElementById('video'); const canvas = document.getElementById('canvas');
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            fotoSelfieData = canvas.toDataURL('image/jpeg', 0.5); 
+            video.classList.remove('active'); canvas.classList.add('active');
+            document.getElementById('btnCapture').classList.add('hidden'); document.getElementById('btnRetake').classList.remove('hidden');
+            document.getElementById('fotoSelfie').value = fotoSelfieData;
+        }
+
+        function retake() {
+            document.getElementById('video').classList.add('active'); document.getElementById('canvas').classList.remove('active');
+            document.getElementById('btnCapture').classList.remove('hidden'); document.getElementById('btnRetake').classList.add('hidden');
+            fotoSelfieData = null;
+        }
+
+        async function startCameraForm() {
+            try {
+                streamForm = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 640 } } });
+                document.getElementById('videoForm').srcObject = streamForm;
+                document.getElementById('videoForm').classList.add('active');
+                document.getElementById('btnStartForm').classList.add('hidden'); document.getElementById('btnCaptureForm').classList.remove('hidden');
+            } catch(err) { alert('Gagal buka kamera: ' + err.message); }
+        }
+
+        function captureForm() {
+            const video = document.getElementById('videoForm'); const canvas = document.getElementById('canvasForm');
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            fotoFormData = canvas.toDataURL('image/jpeg', 0.5);
+            video.classList.remove('active'); canvas.classList.add('active');
+            document.getElementById('btnCaptureForm').classList.add('hidden'); document.getElementById('btnRetakeForm').classList.remove('hidden');
+            document.getElementById('fotoForm').value = fotoFormData;
+        }
+
+        function retakeForm() {
+            document.getElementById('videoForm').classList.add('active'); document.getElementById('canvasForm').classList.remove('active');
+            document.getElementById('btnCaptureForm').classList.remove('hidden'); document.getElementById('btnRetakeForm').classList.add('hidden');
+            fotoFormData = null;
+        }
+
+        function showHistory() {
+            const nrp = document.getElementById('nrp').value;
+            if(!nrp) { alert('Masukkan NRP Anda terlebih dahulu!'); return; }
+            const history = JSON.parse(localStorage.getItem('absenHistory_' + nrp) || '[]');
+            const container = document.getElementById('historyContainer');
+            
+            if(history.length === 0) {
+                container.innerHTML = '<div class="card" style="text-align:center; color:#94a3b8;">Belum ada riwayat absen untuk NRP ini di HP ini.</div>';
+            } else {
+                let html = '<div class="card"><h3 style="color:var(--gold); margin-bottom:15px; text-align:center;">Riwayat Absen Anda</h3>';
+                history.slice().reverse().forEach(item => {
+                    html += `<div class="history-item"><b>${item.date}</b> - ${item.jam}<br>Jenis: ${item.jenis} | Status: ${item.status}</div>`;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            }
+            container.classList.toggle('hidden');
+        }
+
+        document.getElementById('absenForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if(!document.getElementById('jenisAbsen').value) { alert('Pilih Masuk/Keluar!'); return; }
+            const status = document.querySelector('input[name="status"]:checked').value;
+            if(status === 'Hadir' && !fotoSelfieData) { alert('Selfie wajib!'); return; }
+            
+            document.getElementById('btnSubmit').disabled = true;
+            document.getElementById('btnSubmit').textContent = 'Mengirim...';
+            
+            const nrp = document.getElementById('nrp').value;
+            const nama = document.getElementById('nama').value;
+            const shift = document.querySelector('input[name="shift"]:checked').value;
+            const jenisAbsen = document.getElementById('jenisAbsen').value;
+            const jamAbsen = new Date().toLocaleTimeString('id-ID');
+            const keterangan = document.getElementById('keterangan').value || '-';
+
+            const data = { timestamp: new Date().toISOString(), nrp, nama, shift, jenisAbsen, status, jamAbsen, fotoSelfie: fotoSelfieData || '', fotoForm: fotoFormData || '', keterangan };
+            
+            try {
+                await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                
+                let history = JSON.parse(localStorage.getItem('absenHistory_' + nrp) || '[]');
+                history.push({ date: new Date().toLocaleDateString('id-ID'), jenis: jenisAbsen, status: status, jam: jamAbsen });
+                localStorage.setItem('absenHistory_' + nrp, JSON.stringify(history));
+
+                const strukText = `*BUKTI ABSENSI PT. KUTIM*%0ANama: ${nama}%0ANRP: ${nrp}%0AShift: ${shift}%0AJenis: ${jenisAbsen}%0AStatus: ${status}%0AJam: ${jamAbsen}%0AKet: ${keterangan}`;
+                
+                document.getElementById('statusMsg').innerHTML = `
+                    <h3 style="color:#4ade80; margin-bottom:10px;">✅ ABSEN BERHASIL!</h3>
+                    <p style="text-align:left; font-size:14px; margin-bottom:15px;">
+                        <b>Nama:</b> ${nama}<br><b>Jam:</b> ${jamAbsen}<br><b>Status:</b> ${status} (${jenisAbsen})
+                    </p>
+                    <a href="https://wa.me/?text=${strukText}" target="_blank" class="wa-btn">📤 Kirim Bukti ke WA</a>
+                `;
+                document.getElementById('statusMsg').className = 'status-message success';
+                document.getElementById('btnSubmit').textContent = '🚀 KIRIM ABSEN';
+                document.getElementById('btnSubmit').disabled = false;
+                
+            } catch(err) {
+                document.getElementById('statusMsg').textContent = '❌ Gagal: ' + err.message;
+                document.getElementById('statusMsg').className = 'status-message error';
+                document.getElementById('btnSubmit').disabled = false;
+                document.getElementById('btnSubmit').textContent = '🚀 KIRIM ABSEN';
+            }
+        });
+    </script>
+</body>
+</html>
